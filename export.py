@@ -26,10 +26,11 @@ def load_dataset(file_path, state_len=50, pred_len=10, features=3):  # 后两个
 def get_args():
     parser = argparse.ArgumentParser("parameters")
     parser.add_argument("--input-size", type=int, default=3, help="input size")
-    parser.add_argument("--hidden-size", type=int, default=50, help="hidden size")
+    parser.add_argument("--hidden-size", type=int, default=900, help="hidden size")
     parser.add_argument("--output-features", type=int, default=3, help="output size")
     parser.add_argument("--pred-len", type=int, default=10, help="predict length")
-    parser.add_argument("--data", type=str, default='data/val/4.txt')
+    parser.add_argument("--nums-layer", type=int, default=2, help="nums of layers")
+    parser.add_argument("--data", type=str, default='data/val/3.txt')
     parser.add_argument("--model", type=str, default='runs/best.pth')
     args = parser.parse_args()
     return args
@@ -41,7 +42,7 @@ def export(args):
 
     dataset = load_dataset(args.data)
     net = RNN(input_size=args.input_size, hidden_size=args.hidden_size, output_features=args.output_features,
-              pred_len=args.pred_len)
+              pred_len=args.pred_len,num_layers=args.nums_layer)
     param = torch.load(args.model)
     net.load_state_dict(param)
     net.eval()

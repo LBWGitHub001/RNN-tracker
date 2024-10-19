@@ -18,8 +18,10 @@ class RNN(nn.Module):
         self.fc2 = nn.Linear(output_features * pred_len*2, output_features * pred_len)
 
     def forward(self, x):
-        means = x.mean()
-        h0 = means*torch.zeros(self.num_layers, x.shape[0], self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, x.shape[0], self.hidden_size).to(x.device)
+        mean = x.mean(dim=1, keepdim=True)
+        std = x.std(dim=1, keepdim=True)
+        x = (x - mean) / std
         # 前向传播GRU
         out, _ = self.gru(x, h0)
         out=out[:, -1, :]
@@ -28,6 +30,7 @@ class RNN(nn.Module):
         y_hat = F.relu(y_hat)
         y_hat = self.fc2(y_hat)
         y_hat = y_hat.view(y_hat.size(0), self.pred_len, self.output_features)
+        y_hat = y_hat*std+mean
         return y_hat
 
 

@@ -28,8 +28,8 @@ def load_dataset(dirpath, state_len=50, pred_len=10, features=3):  # 后两个�
                     blockTensor = blockTensor.unsqueeze(0)
                     Dataset = torch.cat((Dataset, blockTensor), 0)
                     linedata.clear()
-    print("Sample:{}".format(len(Dataset)))
-    dataset = TrackData(Dataset)
+    print("Sample:{}".format(len(Dataset)-1))
+    dataset = TrackData(Dataset[1:,:,:])
     return dataset
 
 
@@ -78,7 +78,7 @@ def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device):
 if __name__ == '__main__':
     state_len = 990
     pred_len = 10
-    net = RNN(input_size=3, hidden_size=state_len, output_features=3, pred_len=pred_len, num_layers=1)
+    net = RNN(input_size=3, hidden_size=state_len, output_features=3, pred_len=pred_len, num_layers=3)
     #param = torch.load('runs/last.pth')
     #net.load_state_dict(param)
     loss = nn.MSELoss()
@@ -86,6 +86,6 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     train_dataset = load_dataset('data/train',state_len=state_len, pred_len=pred_len)
     valid_dataset = load_dataset('data/val',state_len=state_len, pred_len=pred_len)
-    data_iter = DataLoader(train_dataset, batch_size=1024, shuffle=True)
-    val_iter = DataLoader(valid_dataset, batch_size=1024, shuffle=False)
-    start_train(data_iter, val_iter, net, loss, optimizer, epochs=500, device=device)
+    data_iter = DataLoader(train_dataset, batch_size=512, shuffle=True)
+    val_iter = DataLoader(valid_dataset, batch_size=512, shuffle=False)
+    start_train(data_iter, val_iter, net, loss, optimizer, epochs=300, device=device)
