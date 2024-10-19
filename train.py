@@ -33,9 +33,11 @@ def load_dataset(dirpath, state_len=50, pred_len=10, features=3):  # 后两个�
     return dataset
 
 
-def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device, state_len=50, pred_len=10):
+def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device):
     lossArray = []  # 存储损失值，画图
     history_min = 100000000
+    pred_len = 10
+    state_len = 50
     net = net.to(device)
     net.train()
     lossfunc.to(device)
@@ -60,7 +62,7 @@ def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device, s
             count = count + 1
         print("Epoch[{}/{}]-----Loss[{}]".format(epoch, epochs, lossSum / count))
         lossArray.append(lossSum / count)
-        if (lossSum / count < history_min):
+        if(lossSum / count < history_min):
             history_min = lossSum / count
             torch.save(net.state_dict(), 'runs/best.pth')
             print('---------------------------------Best Update---------------------------------')
@@ -74,17 +76,16 @@ def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device, s
 
 
 if __name__ == '__main__':
-    state_len = 500
+    state_len = 990
     pred_len = 10
     net = RNN(input_size=3, hidden_size=state_len, output_features=3, pred_len=pred_len, num_layers=1)
-    # param = torch.load('runs/last.pth')
-    # net.load_state_dict(param)
+    #param = torch.load('runs/last.pth')
+    #net.load_state_dict(param)
     loss = nn.MSELoss()
-    optimizer = optim.Adam(net.parameters(), lr=0.01)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    train_dataset = load_dataset('data/train', state_len=state_len, pred_len=pred_len)
-    valid_dataset = load_dataset('data/val', state_len=state_len, pred_len=pred_len)
-    data_iter = DataLoader(train_dataset, batch_size=256, shuffle=True)
-    val_iter = DataLoader(valid_dataset, batch_size=256, shuffle=False)
-    start_train(data_iter, val_iter, net, loss, optimizer, epochs=500, device=device, state_len=state_len,
-                pred_len=pred_len)
+    train_dataset = load_dataset('data/train',state_len=state_len, pred_len=pred_len)
+    valid_dataset = load_dataset('data/val',state_len=state_len, pred_len=pred_len)
+    data_iter = DataLoader(train_dataset, batch_size=1024, shuffle=True)
+    val_iter = DataLoader(valid_dataset, batch_size=1024, shuffle=False)
+    start_train(data_iter, val_iter, net, loss, optimizer, epochs=500, device=device)
