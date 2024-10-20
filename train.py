@@ -35,6 +35,7 @@ def load_dataset(dirpath, state_len=50, pred_len=10, features=3):  # 后两个�
 
 def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device):
     lossArray = []  # 存储损失值，画图
+    lossTrainArray=[]
     history_min = 100000000
     pred_len = 10
     state_len = 50
@@ -44,6 +45,8 @@ def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device):
     for epoch in range(epochs):
         lossSum = 0
         count = 0
+        lossTrain=0
+        countTrain=0
         for data in data_iter:
             data = data.to(device)
             x = data[:, 0:state_len, :]
@@ -52,6 +55,9 @@ def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device):
             loss = lossfunc(y_hat, y)
             loss.backward()
             optimizer.step()
+            lossTrain = lossTrain + loss.item()
+            countTrain = countTrain + 1
+        lossTrainArray.append(lossTrain / countTrain)
         for val in val_iter:
             val = val.to(device)
             x = val[:, 0:state_len, :]
@@ -67,16 +73,21 @@ def start_train(data_iter, val_iter, net, lossfunc, optimizer, epochs, device):
             torch.save(net.state_dict(), 'runs/best.pth')
             print('---------------------------------Best Update---------------------------------')
     plt.plot(lossArray)
-    plt.title("Loss vs Epoch")
+    plt.title("Loss vs Epoch(Valid)")
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.savefig('loss-iter.png')
+    plt.savefig('loss-iter(Valid).png')
     plt.show()
+    plt.plot(lossTrainArray)
+    plt.title("Loss vs Epoch(Train)")
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.savefig('loss-iter(Train).png')
     torch.save(net.state_dict(), 'runs/last.pth')
 
 
 if __name__ == '__main__':
-    state_len = 990
+    state_len = 500
     pred_len = 10
     net = RNN(input_size=3, hidden_size=state_len, output_features=3, pred_len=pred_len, num_layers=3)
     #param = torch.load('runs/last.pth')

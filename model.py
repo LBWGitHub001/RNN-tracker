@@ -14,8 +14,7 @@ class RNN(nn.Module):
         self.output_features = output_features
         self.num_layers = num_layers
         self.gru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
-        self.fc1 = nn.Linear(hidden_size, output_features * pred_len*2)
-        self.fc2 = nn.Linear(output_features * pred_len*2, output_features * pred_len)
+        self.fc1 = nn.Linear(hidden_size, output_features * pred_len)
 
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.shape[0], self.hidden_size).to(x.device)
@@ -28,7 +27,6 @@ class RNN(nn.Module):
         y_hidden = out.reshape(out.size(0), -1)
         y_hat = self.fc1(y_hidden)
         y_hat = F.relu(y_hat)
-        y_hat = self.fc2(y_hat)
         y_hat = y_hat.view(y_hat.size(0), self.pred_len, self.output_features)
         y_hat = y_hat*std+mean
         return y_hat

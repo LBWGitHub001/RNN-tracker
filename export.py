@@ -26,10 +26,10 @@ def load_dataset(file_path, state_len=50, pred_len=10, features=3):  # 后两个
 def get_args():
     parser = argparse.ArgumentParser("parameters")
     parser.add_argument("--input-size", type=int, default=3, help="input size")
-    parser.add_argument("--hidden-size", type=int, default=900, help="hidden size")
+    parser.add_argument("--hidden-size", type=int, default=500, help="hidden size")
     parser.add_argument("--output-features", type=int, default=3, help="output size")
     parser.add_argument("--pred-len", type=int, default=10, help="predict length")
-    parser.add_argument("--nums-layer", type=int, default=2, help="nums of layers")
+    parser.add_argument("--nums-layer", type=int, default=3, help="nums of layers")
     parser.add_argument("--data", type=str, default='data/val/3.txt')
     parser.add_argument("--model", type=str, default='runs/best.pth')
     args = parser.parse_args()
@@ -51,15 +51,16 @@ def export(args):
     # 计算
     data = dataset
     data = data.to(device)
-    data = data[-args.hidden_size - 1:-1, :]
-    data = data.unsqueeze(0)
-    y_hat = net(data)
+    x = data[-args.hidden_size - 1:-1, :]
+    x_array = x.to('cpu').detach().numpy()
+    x = x.unsqueeze(0)
+    y_hat = net(x)
     y_hat = y_hat.reshape(args.pred_len, args.output_features)
     y_hat = y_hat.to('cpu').detach().numpy()
     # y = torch.cat(dataset, y_hat).to('cpu')
     plt.plot([i for i in range(len(dataset[:, 0]))], dataset[:, 0], color = 'b')
     plt.plot([len(dataset[:, 0])+i+1 for i in range(len(y_hat[:, 0]))], y_hat[:, 0], color = 'r')
-    plt.title("X direction predect")
+    plt.title("X direction predict")
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.savefig('X.png')
